@@ -43,19 +43,21 @@ func init() {
 	config := cors.DefaultConfig()
 	config.AllowOrigins = trustAddress // 모든 도메인에 대한 요청을 허용
 	server.Use(cors.New(config))
+
 	// Set Event Controller
 	eventCtx = context.Background()
 	eventService = services.NewEventService(eventCtx)
 	eventController = controllers.NewEventController(eventService)
+}
 
+func main() {
 	eventpath := server.Group("/events")
 	eventpath.Use(gin.CustomRecovery(func(ctx *gin.Context, rec interface{}) {
 		fmt.Println("panic이 일어 날 떄만 동작 하는 middleWare")
 		fmt.Println(rec) // rec에서는 panic에서 넘어오는 값이 적히게 된다.
+		// 후에 가능하다면 middleWare에 따로 정리할 예정
 	}))
 	eventController.RegisterEventRoutes(eventpath)
-}
 
-func main() {
 	log.Fatal(server.Run(envConfig.ServerAddress))
 }
