@@ -1,0 +1,30 @@
+name: my-ci
+
+on: push
+
+jobs:
+  go-version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.19.4"
+          cache: true
+      - name: Display Go version
+        run: go version
+
+  go-install-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go environment
+        run: |
+          export PATH=$PATH:/usr/local/go/bin
+          export GOPATH=$HOME/go
+          export PATH=$PATH:$GOPATH/bin
+          export GOROOT=/usr/lib/go-1.13
+          export PATH=$PATH:$GOROOT/bin
+      - name: Download dependencies
+        run: go mod download
