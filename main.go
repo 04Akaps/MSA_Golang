@@ -7,6 +7,7 @@ import (
 
 	"GO_MSA/config"
 	"GO_MSA/controllers"
+	"GO_MSA/mongo"
 	"GO_MSA/services"
 
 	"github.com/gin-contrib/cors"
@@ -46,11 +47,19 @@ func init() {
 
 	// Set Event Controller
 	eventCtx = context.Background()
-	eventService = services.NewEventService(eventCtx)
-	eventController = controllers.NewEventController(eventService)
 }
 
 func main() {
+	// mongo Session
+
+	mongoDBLayout, err := mongo.NewMongoSession(envConfig.MongoAddress)
+	if err != nil {
+		panic("Mongo Session Connection Error")
+	}
+
+	eventService = services.NewEventService(eventCtx, mongoDBLayout)
+	eventController = controllers.NewEventController(eventService)
+
 	eventpath := server.Group("/events")
 	eventpath.Use(gin.CustomRecovery(func(ctx *gin.Context, rec interface{}) {
 		fmt.Println("panic이 일어 날 떄만 동작 하는 middleWare")
@@ -60,4 +69,6 @@ func main() {
 	eventController.RegisterEventRoutes(eventpath)
 
 	log.Fatal(server.Run(envConfig.ServerAddress))
+
+	defer mongoDBLayout.Session.Close() // 리소스를 줄이기 위해서 mongo에 대한 Close를 defer로 호출
 }
