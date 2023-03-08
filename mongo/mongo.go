@@ -19,3 +19,7 @@ func NewMongoSession(path string) (*MongoDBLayer, error) {
 func (mongoLayer MongoDBLayer) GetFreshSession() *mgo.Session {
 	return mongoLayer.Session.Copy()
 }
+
+func (mongoLayer MongoDBLayer) GetCollection(session *mgo.Session, db, collection string) *mgo.Collection {
+	return session.DB(db).C(collection)
+}
