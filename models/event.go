@@ -12,7 +12,7 @@ type EventModel struct {
 }
 
 type Loccation struct {
-	Id        bson.ObjectId `json:"id" binding:"required" bson:"id"`
+	Id        bson.ObjectId `json:"id" bson:"id"`
 	Name      string        `json:"name" binding:"required" bson:"name"`
 	Address   string        `json:"address" binding:"required" bson:"address"`
 	Countrry  string        `json:"country" binding:"required" bson:"country"`
