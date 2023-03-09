@@ -34,18 +34,18 @@ func init() {
 	gin.SetMode(gin.DebugMode)
 	gin.EnableJsonDecoderDisallowUnknownFields()
 
-	trustAddress := []string{"http://127.0.0.1"} // nginx를 사용할 예정이기 떄문에
+	// trustAddress := []string{"http://127.0.0.1"} // nginx를 사용할 예정이기 떄문에
 
 	server = gin.New()
 
-	server.SetTrustedProxies(trustAddress)
+	// server.SetTrustedProxies(trustAddress)
 
 	server.Use(gin.Logger())   // Logger를 통해서 DefaultWriter에 로그를 기록 -> 로그 형태 변환
 	server.Use(gin.Recovery()) // panic이 발생하면 500에러
 
 	// Set Cors
 	config := cors.DefaultConfig()
-	config.AllowOrigins = trustAddress // 모든 도메인에 대한 요청을 허용
+	// config.AllowOrigins = trustAddress // 모든 도메인에 대한 요청을 허용
 	server.Use(cors.New(config))
 
 	// Set Event Controller

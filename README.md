@@ -54,3 +54,23 @@ docker를 빌드하는 기본적인 명령어 입니다.
 
 해당 명령어는 docker hub에 image를 업로드 하는 명령어 입니다.
 기존에 구워낸 -> build해서 이미지가 생성된 이미지를 이제 hub에 업로드 하게 됩니다.
+
+# Jenkins
+
+Jenkins에서 github나 EC에 접근하기 위해서 SSH를 사용할 것이고 다음과 같은 명령어로 생성 하면 됩니다.
+
+- ssh-keygen -t ed25519 -a 100 -f jenkins-ssh-key
+
+해당 명령어로 key를 두가지 생성해 줍니다.
+
+- \*.pub => public Key
+- 나머지 => private Key
+
+그러면 이제 Jenkins에는 private Key를 등록해 두고, Github에는 Public Key를 등록하게 된다면 서로 암호화 통신이 가능합니다.
+
+- Github의 경우에는 settings 에서 Deply Keys에 등록
+
+Jenkins의 경우에는 Credentials페이지로 접속하여 Private Key를 등록하면 됩니다.
+
+<img src="./img/github PubKey.png">
+<img src="./img/Jenkins PrivateKey.png">
