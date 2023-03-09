@@ -17,7 +17,7 @@ pipeline {
         }
         stage("Test Cli") {
             steps {
-                sh 'ls -al'
+                sh 'go version'
             }
         }
     }
