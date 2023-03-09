@@ -10,10 +10,11 @@ pipeline {
     agent any
 
     stages {
-        stage("Pull codes from Github")
+        stage("Pull codes from Github"){
             steps {
                 checkout scm
             }
+        }
         stage("Test Cli") {
             steps {
                 echo ls -al
