@@ -9,6 +9,8 @@ import (
 type Config struct {
 	ServerAddress string `mapstructure:"server_address"`
 	MongoAddress  string `mapstructure:"mongo_address"`
+	CsrName       string `mapstructure:"csr_name"`
+	KeyName       string `mapstructure:"key_name"`
 }
 
 func LoadConfig(path string) Config {

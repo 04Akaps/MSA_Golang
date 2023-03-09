@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 
 	"GO_MSA/config"
 	"GO_MSA/controllers"
@@ -68,7 +69,22 @@ func main() {
 	}))
 	eventController.RegisterEventRoutes(eventpath)
 
-	log.Fatal(server.Run(envConfig.ServerAddress))
+	tlsConfig, err := config.GetTlsConfig(envConfig)
+	if err != nil {
+		log.Fatal("GetTlsConfig Error", err)
+	}
+
+	// HTTPS 설정
+	httpsServer := &http.Server{
+		Addr:      envConfig.ServerAddress,
+		Handler:   server,
+		TLSConfig: tlsConfig,
+	}
+
+	err = httpsServer.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatal("Server Start Error", err)
+	}
 
 	defer mongoDBLayout.Session.Close() // 리소스를 줄이기 위해서 mongo에 대한 Close를 defer로 호출
 }
