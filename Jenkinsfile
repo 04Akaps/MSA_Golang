@@ -17,7 +17,7 @@ pipeline {
         }
         stage("Test Cli") {
             steps {
-                echo ls -al
+                sh 'ls -al'
             }
         }
     }
