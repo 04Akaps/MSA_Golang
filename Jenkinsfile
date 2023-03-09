@@ -26,7 +26,7 @@ pipeline {
             }
         }
 
-        stage("Test Cli") {
+        stage("Test Cli222") {
             steps {
                 sh 'go version'
             }
