@@ -24,6 +24,9 @@ pipeline {
                     go build -o main
                 '''
             }
+        }
+
+        stage("Test Cli") {
             steps {
                 sh 'go version'
             }
