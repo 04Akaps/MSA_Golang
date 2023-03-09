@@ -1,25 +1,28 @@
 package mongo
 
 import (
-	"gopkg.in/mgo.v2"
+	"context"
+
+	"GO_MSA/config"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoDBLayer struct {
-	Session *mgo.Session
+	Session *mongo.Client
 }
 
-func NewMongoSession(path string) (*MongoDBLayer, error) {
-	session, err := mgo.Dial(path)
+func NewMongoSession(ctxMongo context.Context, envConfig config.Config) (*MongoDBLayer, error) {
+	mongoconn := options.Client().ApplyURI("mongodb+srv://hojin:12345@cluster0.w5vs9re.mongodb.net/?retryWrites=true&w=majority")
+
+	mongoClient, err := mongo.Connect(ctxMongo, mongoconn)
 
 	return &MongoDBLayer{
-		Session: session,
+		Session: mongoClient,
 	}, err
 }
 
-func (mongoLayer MongoDBLayer) GetFreshSession() *mgo.Session {
-	return mongoLayer.Session.Copy()
-}
-
-func (mongoLayer MongoDBLayer) GetCollection(session *mgo.Session, db, collection string) *mgo.Collection {
-	return session.DB(db).C(collection)
+func (mongoLayer MongoDBLayer) GetCollection(db, collection string) *mongo.Collection {
+	return mongoLayer.Session.Database(db).Collection(collection)
 }

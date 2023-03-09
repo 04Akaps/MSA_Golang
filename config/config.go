@@ -9,6 +9,10 @@ import (
 type Config struct {
 	ServerAddress string `mapstructure:"server_address"`
 	MongoAddress  string `mapstructure:"mongo_address"`
+	MongoHostName string `mapstructure:"mongo_host_name"`
+	MongoPort     string `mapstructure:"mongo_port"`
+	MongoUserName string `mapstructure:"mongo_user_name"`
+	MongoPassword string `mapstructure:"mongo_password"`
 	CsrName       string `mapstructure:"csr_name"`
 	KeyName       string `mapstructure:"key_name"`
 }

@@ -24,6 +24,8 @@ var (
 	eventController controllers.EventController
 )
 
+var ctxMongo context.Context
+
 var envConfig config.Config
 
 func init() {
@@ -48,14 +50,15 @@ func init() {
 
 	// Set Event Controller
 	eventCtx = context.Background()
+	ctxMongo = context.Background()
 }
 
 func main() {
 	// mongo Session
 
-	mongoDBLayout, err := mongo.NewMongoSession(envConfig.MongoAddress)
+	mongoDBLayout, err := mongo.NewMongoSession(ctxMongo, envConfig)
 	if err != nil {
-		panic("Mongo Session Connection Error")
+		log.Fatal("Mongo Session Connection Error", err)
 	}
 
 	eventService = services.NewEventService(eventCtx, mongoDBLayout)
@@ -86,5 +89,5 @@ func main() {
 		log.Fatal("Server Start Error", err)
 	}
 
-	defer mongoDBLayout.Session.Close() // 리소스를 줄이기 위해서 mongo에 대한 Close를 defer로 호출
+	defer mongoDBLayout.Session.Disconnect(ctxMongo) // 리소스를 줄이기 위해서 mongo에 대한 Close를 defer로 호출
 }

@@ -10,5 +10,5 @@ type Event interface {
 	AddEvent(*models.EventModel) (bson.ObjectId, error)
 	FindEvent(string) (*models.EventModel, error)
 	FindEventByName(string) (*models.EventModel, error)
-	FindAllAvaliableEvents() (*[]models.EventModel, error)
+	FindAllAvaliableEvents() ([]models.EventModel, error)
 }

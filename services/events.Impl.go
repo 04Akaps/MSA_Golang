@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 
 	"GO_MSA/models"
 	"GO_MSA/mongo"
@@ -27,8 +28,6 @@ const (
 )
 
 func (ei *EventServiceImpl) AddEvent(event *models.EventModel) (bson.ObjectId, error) {
-	s := ei.session.GetFreshSession()
-
 	if !event.Id.Valid() {
 		// id가 문제가 없는지 확인 -> 반드시 12 bytes를 소유하고 있을 떄 Valid가 동작
 		event.Id = bson.NewObjectId()
@@ -38,45 +37,44 @@ func (ei *EventServiceImpl) AddEvent(event *models.EventModel) (bson.ObjectId, e
 		event.Location.Id = bson.NewObjectId()
 	}
 
-	defer s.Close()
+	_, err := ei.session.GetCollection(DB, EVENT).InsertOne(ei.ctx, event)
 
-	return (event.Id), ei.session.GetCollection(s, DB, EVENT).Insert(event)
+	return (event.Id), err
 	// DB는 들어가는 인자에 맞는 database를 준다.
 	// C는 컬렉션을 반환
 	// Insert를 사용하여 데이터를 추가
 }
 
 func (ei *EventServiceImpl) FindEvent(id string) (*models.EventModel, error) {
-	s := ei.session.GetFreshSession()
-
-	defer s.Clone()
-
 	e := &models.EventModel{}
-
-	err := ei.session.GetCollection(s, DB, EVENT).FindId(bson.ObjectId(id)).One(e)
+	err := ei.session.GetCollection(DB, EVENT).FindOne(ei.ctx, bson.M{"_id": id}).Decode(e)
 	// 특정 EVENT를 찾는 코드 또한 이와 같다.
 	return e, err
 }
 
 func (ei *EventServiceImpl) FindEventByName(name string) (*models.EventModel, error) {
-	s := ei.session.GetFreshSession()
-
-	defer s.Close()
-
 	e := &models.EventModel{}
-
-	err := ei.session.GetCollection(s, DB, EVENT).Find(bson.M{"name": name}).One(e)
+	err := ei.session.GetCollection(DB, EVENT).FindOne(ei.ctx, bson.M{"name": name}).Decode(e)
 	return e, err
 }
 
-func (ei *EventServiceImpl) FindAllAvaliableEvents() (*[]models.EventModel, error) {
-	s := ei.session.GetFreshSession()
+func (ei *EventServiceImpl) FindAllAvaliableEvents() ([]models.EventModel, error) {
+	e := []models.EventModel{}
 
-	defer s.Close()
+	result, err := ei.session.GetCollection(DB, EVENT).Find(ei.ctx, bson.M{})
 
-	e := &[]models.EventModel{}
+	defer result.Close(ei.ctx)
 
-	err := ei.session.GetCollection(s, DB, EVENT).Find(nil).All(e)
+	for result.Next(ei.ctx) {
+		var element models.EventModel
+
+		err := result.Decode(element)
+		if err != nil {
+			log.Fatal("Get All Events Error", err)
+		}
+
+		e = append(e, element)
+	}
 
 	return e, err
 }

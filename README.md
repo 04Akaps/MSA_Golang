@@ -37,3 +37,20 @@ openssl req -x509 -newkey rsa:2048 -nodes keyout key.pem -out cert.pem -days 365
 4. -keyout key.pem : 개인키를 `key.pem`으로 생성합니다.
 5. -out cert.pem : 셀프 서명 인증서(CSR)을 cert.pem에 지정 합니다.
 6. -days 365 : 유효기간을 1년으로 설정합니다.
+
+# docker
+
+1. docker build -t name/repository:tag path
+
+docker를 빌드하는 기본적인 명령어 입니다.
+
+이미지의 이름 + 사용될 레파지토리 + 태그 + 포함할 파일을 입력합니다.
+
+- 예시는 다음과 같습니다.
+- docker build -t hojin/msa:1.0 ./
+  // 해당 명령어는 로컬에 빌드하는 명령어 입니다.
+
+2. docker push name/repository:tag
+
+해당 명령어는 docker hub에 image를 업로드 하는 명령어 입니다.
+기존에 구워낸 -> build해서 이미지가 생성된 이미지를 이제 hub에 업로드 하게 됩니다.
