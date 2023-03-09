@@ -28,7 +28,7 @@ pipeline {
 
         stage("Build Docker Image"){
             steps {
-                sh 'docker build -t hojin/MSA_Go:${currentBuild.number} .' 
+                sh 'docker build -t hojin/MSA_Go:$currentBuild.number .' 
             }
         }
 
