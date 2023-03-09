@@ -74,3 +74,44 @@ Jenkins의 경우에는 Credentials페이지로 접속하여 Private Key를 등�
 
 <img src="./img/github PubKey.png">
 <img src="./img/Jenkins PrivateKey.png">
+
+그 후 AWS에서 사용한 Key를 등록해 주어야 합니다.
+
+- 플러그인이 제대로 설치되어 있다면 Jenkins관리 -> AWS에서 추가하는 Modal을 띄워줍니다.
+
+<img src="./img/Jenkins_Key_deploy.png">
+
+그 후 `Kind`부분만 `AWS Credentials`로 설정해주고 나머지 값은 편하게 입력해 줍니다.
+
+- AccessKey는 사용중인 IAM의 accessKey를 넣어주면 됩니다.
+
+그 후 마지막으로 credentials에서 설정한 Key가 있는지 확인하면 됩니다.
+
+<img src="./img/Jenkins_Key_end.png">
+1. Github에 대한 Key
+2. AWS에 대한 Key
+
+# ECR
+
+저는 docker hub가 아닌 ECR을 사용을 하였습니다.
+
+기본적으로 aws cli를 설치해야 합니다.
+
+- 그 후 aws --version을 통해서 확인합니다.
+
+그 후 초기 설정 aws configure를 통해서 사용자를 설정해 주어야 합니다.
+
+- 입력값으로 IAM의 Access Key를 입력하게 되어 있습니다.
+- 그러기 떄문에 적합한 값을 입력해 주면 됩니다.
+- Region은 서울인 `ap-northeast-2`로 설정해 줍니다.
+- 마지막으로 format은 모두가 익숙한 json으로 설정합니다.
+
+이후 기본적으로 인증 토큰을 설정해 주어야 합니다.
+
+- 해당 과정은 ECR에 접근하여 `푸시 명령 보기`에 있는 cli를 그대로 입력해 주면 됩니다.
+- 예시는 다음과 같습니다.
+- `aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin <AWS 12자리 계정>.dkr.ecr.ap-southeast-2.amazonaws.com`
+
+문제 없이 성공한다면 다음과 같은 문구가 뜹니다.
+
+<img src="./img/ecr_success.pgn">
