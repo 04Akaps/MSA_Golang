@@ -20,17 +20,9 @@ pipeline {
                sh '''
                     export GOPATH=$WORKSPACE
                     export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
-                    go get
-                    go build -o main
+                    go version
                 '''
             }
         }
-
-        stage("Test Cli222") {
-            steps {
-                sh 'go version'
-            }
-        }
-
     }
 }
