@@ -61,6 +61,12 @@ func main() {
 		log.Fatal("Mongo Session Connection Error", err)
 	}
 
+	err = mongoDBLayout.Session.Ping(ctxMongo, nil)
+
+	if err != nil {
+		log.Fatal("mongo Connection ERror ping", err)
+	}
+
 	eventService = services.NewEventService(eventCtx, mongoDBLayout)
 	eventController = controllers.NewEventController(eventService)
 
