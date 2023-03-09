@@ -85,11 +85,17 @@ Jenkins의 경우에는 Credentials페이지로 접속하여 Private Key를 등�
 
 - AccessKey는 사용중인 IAM의 accessKey를 넣어주면 됩니다.
 
-그 후 마지막으로 credentials에서 설정한 Key가 있는지 확인하면 됩니다.
+그러면 현재까지 두개의 Key를 등록하였습니다.
 
-<img src="./img/Jenkins_Key_end.png">
+1. Github와 Jenkins를 연결하기 위한 Key
+2. ECR과 Jenkins를 등록하기 위한 Key
+
+마지막으로 Jenkins과 EC2에 사용할 Key를 마지막으로 등록해 주면 됩니다.
+
+<img src="./img/Key_End.png">
 1. Github에 대한 Key
 2. AWS에 대한 Key
+3. Jenkins & EC2사이의 Key
 
 # ECR
 
@@ -114,4 +120,4 @@ Jenkins의 경우에는 Credentials페이지로 접속하여 Private Key를 등�
 
 문제 없이 성공한다면 다음과 같은 문구가 뜹니다.
 
-<img src="./img/ecr_success.pgn">
+<img src="./img/ecr_success.png">
