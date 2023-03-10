@@ -18,6 +18,12 @@ pipeline {
                 checkout scm
             }
         }
+        
+        stage("def Test"){
+            steps {
+                sh "echo ${dockerImgName}"
+            }
+        }
 
         stage("Test Cli") {
             steps {
