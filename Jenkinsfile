@@ -31,10 +31,19 @@ pipeline {
 
         stage("Build Docker Image"){
             steps {
-                script {
-                    docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
-                }
+                // script {
+                //     docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
+                // }
+                // sh '/usr/local/bin/docker build -t hojin/MSA_Go:$currentBuild.number .' 
+                 sh '/usr/local/bin/docker --version' 
             }
         }
+
+        // stage("Push To Image to ECR") {
+        //     steps {
+        //         sh 'docker push ${ecrUrl}/${dockerImgName}:${currentBuild.number}'
+        //     }
+        // }
+
     }
 }
