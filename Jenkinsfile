@@ -34,7 +34,7 @@ pipeline {
                 // script {
                 //     docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
                 // }
-                sh '/usr/local/bin/docker build -t $dockerRegistory/$dockerImgName:$currentBuild.number .' 
+                sh '/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:$currentBuild.number .' 
             }
         }
 
