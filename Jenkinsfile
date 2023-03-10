@@ -18,12 +18,6 @@ pipeline {
                 checkout scm
             }
         }
-        
-        stage("def Test"){
-            steps {
-                sh "echo ${dockerImgName}"
-            }
-        }
 
         stage("Test Cli") {
             steps {
@@ -40,15 +34,8 @@ pipeline {
                 // script {
                 //     docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
                 // }
-                sh '/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:$currentBuild.number .' 
+                sh "/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:$currentBuild.number ."
             }
         }
-
-        // stage("Push To Image to ECR") {
-        //     steps {
-        //         sh 'docker push ${ecrUrl}/${dockerImgName}:${currentBuild.number}'
-        //     }
-        // }
-
     }
 }
