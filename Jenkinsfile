@@ -34,15 +34,7 @@ pipeline {
                 script {
                     docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
                 }
-                // sh 'docker build -t hojin/MSA_Go:$currentBuild.number .' 
             }
         }
-
-        // stage("Push To Image to ECR") {
-        //     steps {
-        //         sh 'docker push ${ecrUrl}/${dockerImgName}:${currentBuild.number}'
-        //     }
-        // }
-
     }
 }
