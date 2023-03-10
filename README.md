@@ -2,6 +2,11 @@
 
 Golang을 활용하여 MSA 구조 서버 만들기
 
+# Architecture
+
+![layout](https://user-images.githubusercontent.com/83758624/224213367-7e30c4f3-a0e1-4d65-8bb3-62aaa246033e.PNG)
+
+
 # NewEvent Request Sample
 
 ```
