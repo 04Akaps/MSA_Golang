@@ -1,5 +1,6 @@
 def mainDir="."
-def dockerImgName="hojin/MSA_Go"
+def dockerImgName="MSA_Go"
+def dockerRegistory="hojin"
 def ecrLoginHelper="docker-credential-ecr-login"
 def region="ap-northeast-1"
 def ecrUrl="297064282309.dkr.ecr.ap-northeast-2.amazonaws.com"
@@ -11,11 +12,13 @@ pipeline {
     agent any
 
     stages {
+
         stage("Pull codes from Github"){
             steps {
                 checkout scm
             }
         }
+
         stage("Test Cli") {
             steps {
                sh '''
@@ -28,14 +31,18 @@ pipeline {
 
         stage("Build Docker Image"){
             steps {
-                sh 'docker build -t hojin/MSA_Go:$currentBuild.number .' 
+                script {
+                    docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
+                }
+                // sh 'docker build -t hojin/MSA_Go:$currentBuild.number .' 
             }
         }
 
-        stage("Push To Image to ECR") {
-            steps {
-                sh 'docker push ${ecrUrl}/${dockerImgName}:${currentBuild.number}'
-            }
-        }
+        // stage("Push To Image to ECR") {
+        //     steps {
+        //         sh 'docker push ${ecrUrl}/${dockerImgName}:${currentBuild.number}'
+        //     }
+        // }
+
     }
 }
