@@ -30,11 +30,8 @@ pipeline {
 
         stage("Build Docker Image"){
             steps {
-                sh '''
-                /usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:${currentBuild.number} .
-                /usr/local/bin/docker tag $dockerImgName:$currentBuild.number $dockerImgName:latest
-                
-                '''
+                sh "/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ."
+                sh "/usr/local/bin/docker tag ${dockerImgName}:${currentBuild.number} ${dockerImgName}:latest"
             }
 
             post {
