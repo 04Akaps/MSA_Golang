@@ -57,7 +57,7 @@ pipeline {
                     sh "/usr/local/bin/aws ecr get-login-password --region ${region} | /usr/local/bin/docker login --username AWS --password-stdin ${ecrUrl}"
                     // 기존에 이미 agent에서 login해 두었지만 혹시 모르니 테스트 용도로 재 로그인 시도
 
-                    sh "docker push ${ecrUrl}/msago:latest"
+                    sh "/usr/local/bin/docker push ${ecrUrl}/msago:latest"
                 }
             }
 
