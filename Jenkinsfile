@@ -1,5 +1,6 @@
 def mainDir="."
 def dockerImgName="msago"
+def docker="/usr/local/bin/docker"
 def dockerRegistory="yuhojin"
 def ecrLoginHelper="docker-credential-ecr-login"
 def region="ap-northeast-2"
@@ -35,8 +36,8 @@ pipeline {
 
         stage("Build Docker Image"){
             steps {
-                sh "/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ."
-                sh "/usr/local/bin/docker tag ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ${dockerImgName}:latest"
+                sh "${docker} build -t ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ."
+                sh "${docker} tag ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ${ecrUrl}/${dockerImgName}:latest"
             }
 
             post {
@@ -54,10 +55,10 @@ pipeline {
                 script {
                     // cleanup current user docker credentials
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
-                    sh "/usr/local/bin/aws ecr get-login-password --region ${region} | /usr/local/bin/docker login --username AWS --password-stdin ${ecrUrl}"
+                    sh "/usr/local/bin/aws ecr get-login-password --region ${region} | ${docker} login --username AWS --password-stdin ${ecrUrl}"
                     // 기존에 이미 agent에서 login해 두었지만 혹시 모르니 테스트 용도로 재 로그인 시도
 
-                    sh "/usr/local/bin/docker push ${ecrUrl}/msago:latest"
+                    sh "${docker} push ${ecrUrl}/${dockerImgName}:latest"
                 }
             }
 
