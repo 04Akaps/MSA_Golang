@@ -49,7 +49,7 @@ pipeline {
                 script {
                     // cleanup current user docker credentials
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
-                    sh "aws ecr get-login-password --region ${region} | /usr/local/bin/docker login --username AWS --password-stdin ${ecrUrl}"
+                    sh "/usr/local/bin/aws ecr get-login-password --region ${region} | /usr/local/bin/docker login --username AWS --password-stdin ${ecrUrl}"
                 }
 
 
