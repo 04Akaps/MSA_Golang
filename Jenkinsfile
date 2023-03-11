@@ -31,7 +31,7 @@ pipeline {
         stage("Build Docker Image"){
             steps {
                 sh "/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ."
-                sh "/usr/local/bin/docker tag ${dockerImgName}:${currentBuild.number} ${dockerImgName}:latest"
+                sh "/usr/local/bin/docker tag ${dockerRegistory}/${dockerImgName}:${currentBuild.number} ${dockerImgName}:latest"
             }
 
             post {
@@ -51,7 +51,7 @@ pipeline {
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
 
                     docker.withRegistry("https://${ecrUrl}", "ecr:${region}:aws-key") {
-                        docker.image("${dockerImgName}:${currentBuild.number}").push()
+                        docker.image("${}/${dockerImgName}:${currentBuild.number}").push()
                         docker.image("${dockerImgName}:latest").push()
                     }
                 }
