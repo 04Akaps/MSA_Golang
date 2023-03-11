@@ -158,3 +158,10 @@ AMQP는 다음과 같은 용어가 있습니다.
 
 6. Channel
    가상의 통신 채널입니다. 하나의 연결에서 여러 채널 사용이 가능하며, 동시 작업이 가능합니다.
+
+docker를 활용해서 실행키시는 cli는 다음과 같습니다.
+
+docker run --detach --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+
+- 해당 명령어는 도커에게 5672포트를 localhost에 맵핑을 하고, 15672 포트는 관리용 사용자 인터페이스를 의미
+- 그 후 연결은 `amqp://localhost:5672`를 통하며, 관리용 UI는 `http://localhost:15672`에서 오픈 가능

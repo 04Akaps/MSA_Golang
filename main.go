@@ -57,12 +57,24 @@ func main() {
 	eventController = controllers.NewEventController(eventService)
 	eventController.RegisterEventRoutes(httpsServer)
 
+	// AMQP 작업 필요
+
+	// amqp, err := amqpserve.GetAmqpConnection(envConfig)
+	// if err != nil {
+	// 	log.Fatal("Error get AMQP Connection", err)
+	// }
+
+	// // channel, err := amqpserve.GetAmquChannel(amqp)
+	// // if err != nil {
+	// // 	log.Fatal("Error get Amqp Channel", err)
+	// // }
+
+	// HTTPS 설정
 	tlsConfig, err := config.GetTlsConfig(envConfig)
 	if err != nil {
 		log.Fatal("GetTlsConfig Error", err)
 	}
 
-	// HTTPS 설정
 	httpsServer := &http.Server{
 		Addr:      envConfig.ServerAddress,
 		Handler:   httpsServer,

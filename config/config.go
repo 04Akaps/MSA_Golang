@@ -15,6 +15,7 @@ type Config struct {
 	MongoPassword string `mapstructure:"mongo_password"`
 	CsrName       string `mapstructure:"csr_name"`
 	KeyName       string `mapstructure:"key_name"`
+	AmqpUri       string `mapstructure:"amqp_uri"`
 }
 
 func LoadConfig(path string) Config {
