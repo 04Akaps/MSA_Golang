@@ -2,7 +2,7 @@ def mainDir="."
 def dockerImgName="msago"
 def dockerRegistory="yuhojin"
 def ecrLoginHelper="docker-credential-ecr-login"
-def region="ap-northeast-1"
+def region="ap-northeast-2"
 def ecrUrl="297064282309.dkr.ecr.ap-northeast-2.amazonaws.com"
 def repository="go_msa"
 def deployHost=""
@@ -51,7 +51,7 @@ pipeline {
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
 
                     docker.withRegistry("https://${ecrUrl}", "ecr:${region}:aws-key") {
-                        docker.image("${}/${dockerImgName}:${currentBuild.number}").push()
+                        docker.image("${dockerRegistory}/${dockerImgName}:${currentBuild.number}").push()
                         docker.image("${dockerImgName}:latest").push()
                     }
                 }
