@@ -1,12 +1,11 @@
 def mainDir="."
-def dockerImgName="MSA_Go"
-def dockerRegistory="hojin"
+def dockerImgName="msago"
+def dockerRegistory="yuhojin"
 def ecrLoginHelper="docker-credential-ecr-login"
 def region="ap-northeast-1"
 def ecrUrl="297064282309.dkr.ecr.ap-northeast-2.amazonaws.com"
 def repository="go_msa"
 def deployHost=""
-
 
 pipeline {
     agent any
@@ -31,10 +30,17 @@ pipeline {
 
         stage("Build Docker Image"){
             steps {
-                // script {
-                //     docker.build("${dockerRegistory}/${dockerImgName}:$currentBuild.number")
-                // }
                 sh "/usr/local/bin/docker build -t ${dockerRegistory}/${dockerImgName}:$currentBuild.number ."
+            }
+        }
+
+        stage("Push To AWS ECR") {
+            steps {
+                // aws-credentials
+                script {
+                    docker.withRegistry("https://${ecrUrl}", "ecr:${region}:aws-key")
+                    app.push("${env.BUILD_NUMBER}")
+                }
             }
         }
     }
