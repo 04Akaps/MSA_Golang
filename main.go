@@ -8,14 +8,17 @@ import (
 
 	"GO_MSA/config"
 	"GO_MSA/controllers"
+	"GO_MSA/initServe"
 	"GO_MSA/mongo"
 	"GO_MSA/services"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-var server *gin.Engine
+var (
+	httpsServer *gin.Engine
+	httpServer  *gin.Engine
+)
 
 var (
 	// event variable
@@ -34,49 +37,25 @@ func init() {
 	gin.SetMode(gin.DebugMode)
 	gin.EnableJsonDecoderDisallowUnknownFields()
 
-	// trustAddress := []string{"http://127.0.0.1"} // nginx를 사용할 예정이기 떄문에
+	httpsServer = gin.New()
+	httpServer = gin.New()
 
-	server = gin.New()
-
-	// server.SetTrustedProxies(trustAddress)
-
-	server.Use(gin.Logger())   // Logger를 통해서 DefaultWriter에 로그를 기록 -> 로그 형태 변환
-	server.Use(gin.Recovery()) // panic이 발생하면 500에러
-
-	// Set Cors
-	config := cors.DefaultConfig()
-	// config.AllowOrigins = trustAddress // 모든 도메인에 대한 요청을 허용
-	server.Use(cors.New(config))
-
+	initServe.SetHttpsServer(httpsServer) // httpsServer 기본 셋티
+	initServe.SetHttpServer(httpServer)   // httpServer 기본 셋팅
 	// Set Event Controller
 	eventCtx = context.Background()
-	ctxMongo = context.Background()
 }
 
 func main() {
 	// mongo Session
-
-	mongoDBLayout, err := mongo.NewMongoSession(ctxMongo, envConfig)
+	mongoDBLayout, err := mongo.NewMongoSession(envConfig)
 	if err != nil {
 		log.Fatal("Mongo Session Connection Error", err)
 	}
 
-	err = mongoDBLayout.Session.Ping(ctxMongo, nil)
-
-	if err != nil {
-		log.Fatal("mongo Connection ERror ping", err)
-	}
-
 	eventService = services.NewEventService(eventCtx, mongoDBLayout)
 	eventController = controllers.NewEventController(eventService)
-
-	eventpath := server.Group("/events")
-	eventpath.Use(gin.CustomRecovery(func(ctx *gin.Context, rec interface{}) {
-		fmt.Println("panic이 일어 날 떄만 동작 하는 middleWare")
-		fmt.Println(rec) // rec에서는 panic에서 넘어오는 값이 적히게 된다.
-		// 후에 가능하다면 middleWare에 따로 정리할 예정
-	}))
-	eventController.RegisterEventRoutes(eventpath)
+	eventController.RegisterEventRoutes(httpsServer)
 
 	tlsConfig, err := config.GetTlsConfig(envConfig)
 	if err != nil {
@@ -86,14 +65,26 @@ func main() {
 	// HTTPS 설정
 	httpsServer := &http.Server{
 		Addr:      envConfig.ServerAddress,
-		Handler:   server,
+		Handler:   httpsServer,
 		TLSConfig: tlsConfig,
 	}
 
-	err = httpsServer.ListenAndServeTLS("", "")
-	if err != nil {
-		log.Fatal("Server Start Error", err)
+	// MSA구조 이기 떄문에 또 하나의 Server를 열어보자
+	// 기존 HTTPS서버는 gin을 사용하고 있기 떄문에 이번에는 net/http로 그냥 http서버만 open할 예정
+	// 하지만 ListenAndServeTLS는 시작하면 둘다 함수를 중단시킨다.
+	// 그러기 떄문에 다른 Go Routin으로 실행시키고 해당 에러에 대해서 channels를 만들어서 구성하자
+
+	httpErrChan, httpsErrChan := initServe.ServeAPI(":80", httpsServer, httpServer)
+
+	// http와 https로 들어오는 서버 중 에러를 발생시키는 case를 탐지
+	select {
+	case err := <-httpErrChan:
+		log.Fatal("HTTP Server Error", err)
+	case err := <-httpsErrChan:
+		log.Fatal("HTTPS Server Error", err)
 	}
+
+	fmt.Println("Server is Started")
 
 	defer mongoDBLayout.Session.Disconnect(ctxMongo) // 리소스를 줄이기 위해서 mongo에 대한 Close를 defer로 호출
 }

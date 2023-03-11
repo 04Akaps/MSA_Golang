@@ -53,6 +53,7 @@ pipeline {
         stage("Push To AWS ECR") {
             steps {
                 script {
+                    // 어차피 aws configure를 해두었다.
                     // cleanup current user docker credentials
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
                     sh "/usr/local/bin/aws ecr get-login-password --region ${region} | ${docker} login --username AWS --password-stdin ${ecrUrl}"

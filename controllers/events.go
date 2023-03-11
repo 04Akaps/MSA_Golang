@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"GO_MSA/middleware"
@@ -97,9 +98,16 @@ func (ec *EventController) NewEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, (result))
 }
 
-func (ec *EventController) RegisterEventRoutes(group *gin.RouterGroup) {
-	group.GET("/findById/:id", ec.FindEventById)
-	group.GET("/findByName/:name", ec.FindEventByName)
-	group.GET("/", ec.AllEvents)
-	group.POST("/", ec.NewEvent)
+func (ec *EventController) RegisterEventRoutes(server *gin.Engine) {
+	eventpath := server.Group("/events")
+	eventpath.Use(gin.CustomRecovery(func(ctx *gin.Context, rec interface{}) {
+		fmt.Println("panic이 일어 날 떄만 동작 하는 middleWare")
+		fmt.Println(rec) // rec에서는 panic에서 넘어오는 값이 적히게 된다.
+		// 후에 가능하다면 middleWare에 따로 정리할 예정
+	}))
+
+	eventpath.GET("/findById/:id", ec.FindEventById)
+	eventpath.GET("/findByName/:name", ec.FindEventByName)
+	eventpath.GET("/", ec.AllEvents)
+	eventpath.POST("/", ec.NewEvent)
 }
