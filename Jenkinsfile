@@ -49,12 +49,18 @@ pipeline {
                 script {
                     // cleanup current user docker credentials
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
-
-                    docker.withRegistry("https://${ecrUrl}", "ecr:${region}:aws-key") {
-                        docker.image("${dockerRegistory}/${dockerImgName}:${currentBuild.number}").push()
-                        docker.image("${dockerImgName}:latest").push()
-                    }
+                    sh "aws ecr get-login-password --region ${region} | /usr/local/bin/docker login --username AWS --password-stdin ${ecrUrl}"
                 }
+
+
+            post {
+                success {
+                    echo 'succes push docker image to ECR'
+                }
+                failure {
+                    error 'fail push docker image to ECR' // exit pipeline
+                }
+            }
             }
         }
     }
