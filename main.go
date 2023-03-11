@@ -48,7 +48,7 @@ func init() {
 
 func main() {
 	// mongo Session
-	mongoDBLayout, err := mongo.NewMongoSession(envConfig)
+	mongoDBLayout, err := mongo.NewMongoSession(ctxMongo, envConfig)
 	if err != nil {
 		log.Fatal("Mongo Session Connection Error", err)
 	}
