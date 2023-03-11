@@ -36,10 +36,11 @@ pipeline {
 
         stage("Push To AWS ECR") {
             steps {
-                // aws-credentials
                 script {
-                    docker.withRegistry("https://${ecrUrl}", "ecr:${region}:aws-key")
-                    app.push("${env.BUILD_NUMBER}")
+                    def ecrCredentials = ecrLogin()
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: ecrCredentials]]) {
+                        sh "docker login -u AWS -p ${ecrCredentials.secretKey} ${ecrCredentials.accessKey}"
+                    }
                 }
             }
         }
