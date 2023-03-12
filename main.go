@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	amqpserve "GO_MSA/amqpServe"
 	"GO_MSA/config"
 	"GO_MSA/controllers"
 	"GO_MSA/initServe"
@@ -13,6 +14,7 @@ import (
 	"GO_MSA/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/streadway/amqp"
 )
 
 var (
@@ -25,6 +27,12 @@ var (
 	eventCtx        context.Context
 	eventService    services.Event
 	eventController controllers.EventController
+)
+
+var (
+	amqpCtx        context.Context
+	amqpService    services.Amqp
+	amqpController controllers.AmqpController
 )
 
 var ctxMongo context.Context
@@ -42,8 +50,9 @@ func init() {
 
 	initServe.SetHttpsServer(httpsServer) // httpsServer 기본 셋티
 	initServe.SetHttpServer(httpServer)   // httpServer 기본 셋팅
-	// Set Event Controller
+	// Set Context
 	eventCtx = context.Background()
+	amqpCtx = context.Background()
 }
 
 func main() {
@@ -52,22 +61,49 @@ func main() {
 	if err != nil {
 		log.Fatal("Mongo Session Connection Error", err)
 	}
-
+	// event Router
 	eventService = services.NewEventService(eventCtx, mongoDBLayout)
 	eventController = controllers.NewEventController(eventService)
 	eventController.RegisterEventRoutes(httpsServer)
 
-	// AMQP 작업 필요
+	// ------------- AMQP Test ----------------
 
-	// amqp, err := amqpserve.GetAmqpConnection(envConfig)
-	// if err != nil {
-	// 	log.Fatal("Error get AMQP Connection", err)
-	// }
+	NewAmqp, err := amqpserve.GetAmqpConnection(envConfig)
+	if err != nil {
+		log.Fatal("Error get AMQP Connection", err)
+	}
 
-	// // channel, err := amqpserve.GetAmquChannel(amqp)
-	// // if err != nil {
-	// // 	log.Fatal("Error get Amqp Channel", err)
-	// // }
+	channel, err := amqpserve.GetAmquChannel(NewAmqp)
+	if err != nil {
+		log.Fatal("Error get Amqp Channel", err)
+	}
+
+	err = channel.ExchangeDeclare("events", "topic", true, false, false, false, nil)
+
+	_, err = channel.QueueDeclare("my_queue", true, false, false, false, nil)
+
+	err = channel.QueueBind("my_queue", "#", "events", false, nil)
+
+	if err != nil {
+		log.Fatal("Error Exchange Declare", err)
+	}
+
+	mseesage := amqp.Publishing{
+		Body: []byte("Heelo World"),
+	}
+
+	err = channel.Publish("events", "sample-key", false, false, mseesage)
+
+	if err != nil {
+		log.Fatal("Error Exchange Declare", err)
+	}
+
+	// event amqpRouter
+	amqpService = services.NewAmqpService(amqpCtx, channel)
+	amqpController = controllers.NewAmqpController(amqpService)
+	amqpController.RegisterAmqpRouter(httpServer)
+
+	// ------------- AMQP Test ----------------
 
 	// HTTPS 설정
 	tlsConfig, err := config.GetTlsConfig(envConfig)
