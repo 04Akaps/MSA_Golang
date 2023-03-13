@@ -30,7 +30,8 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.29
+   lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: golangci/golangci-lint-action@v2
