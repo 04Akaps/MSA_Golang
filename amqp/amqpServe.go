@@ -81,7 +81,10 @@ func (Ea *EventAmqp) Listening() {
 			rawEventName, ok := msg.Headers["x-event-name"]
 
 			if !ok {
-				msg.Nack(false, false)
+				err := msg.Nack(false, false)
+				if err != nil {
+					log.Fatal("Nack error : ", err)
+				}
 				// 만약 잘못되었다면 다른 구독자에게 전달도 안하지만 메시지는 표시하게
 				continue
 			}
@@ -89,7 +92,10 @@ func (Ea *EventAmqp) Listening() {
 			eventName, ok := rawEventName.(string)
 
 			if !ok {
-				msg.Nack(false, false)
+				err := msg.Nack(false, false)
+				if err != nil {
+					log.Fatal("Nack error : ", err)
+				}
 				continue
 			}
 
@@ -107,6 +113,11 @@ func (Ea *EventAmqp) Listening() {
 
 			fmt.Println(event)
 			msg.Ack(false)
+
+			err = msg.Ack(false)
+			if err != nil {
+				log.Fatal("Nack error : ", err)
+			}
 		}
 	}()
 

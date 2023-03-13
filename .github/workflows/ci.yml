@@ -20,6 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: golangci/golangci-lint-action@v2
+        with:
+          config: .golangci.yml
 
   go-install-dependencies:
     runs-on: ubuntu-latest
