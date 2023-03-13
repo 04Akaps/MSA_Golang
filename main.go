@@ -65,6 +65,8 @@ func main() {
 
 	go NewAmqp.Listening()
 
+	amqpserve.SetAmquChannel(NewAmqp, "events", "my_queue")
+
 	httpServer.GET("/sendAmqp", NewAmqp.ServeHTTP)
 
 	// HTTPS 설정
