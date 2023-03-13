@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	amqpserve "GO_MSA/amqpServe"
+	amqpserve "GO_MSA/amqp"
 	"GO_MSA/config"
 	"GO_MSA/controllers"
 	"GO_MSA/initServe"
@@ -14,7 +14,6 @@ import (
 	"GO_MSA/services"
 
 	"github.com/gin-gonic/gin"
-	"github.com/streadway/amqp"
 )
 
 var (
@@ -27,12 +26,6 @@ var (
 	eventCtx        context.Context
 	eventService    services.Event
 	eventController controllers.EventController
-)
-
-var (
-	amqpCtx        context.Context
-	amqpService    services.Amqp
-	amqpController controllers.AmqpController
 )
 
 var ctxMongo context.Context
@@ -52,7 +45,6 @@ func init() {
 	initServe.SetHttpServer(httpServer)   // httpServer 기본 셋팅
 	// Set Context
 	eventCtx = context.Background()
-	amqpCtx = context.Background()
 }
 
 func main() {
@@ -66,44 +58,20 @@ func main() {
 	eventController = controllers.NewEventController(eventService)
 	eventController.RegisterEventRoutes(httpsServer)
 
-	// ------------- AMQP Test ----------------
-
 	NewAmqp, err := amqpserve.GetAmqpConnection(envConfig)
 	if err != nil {
 		log.Fatal("Error get AMQP Connection", err)
 	}
 
-	channel, err := amqpserve.GetAmquChannel(NewAmqp)
-	if err != nil {
-		log.Fatal("Error get Amqp Channel", err)
-	}
-
-	err = channel.ExchangeDeclare("events", "topic", true, false, false, false, nil)
-
-	_, err = channel.QueueDeclare("my_queue", true, false, false, false, nil)
-
-	err = channel.QueueBind("my_queue", "#", "events", false, nil)
+	err = NewAmqp.SetAmquChannel("events", "my_queue")
 
 	if err != nil {
-		log.Fatal("Error Exchange Declare", err)
+		log.Fatal("AMqp Settting Error", err)
 	}
 
-	mseesage := amqp.Publishing{
-		Body: []byte("Heelo World"),
-	}
+	go NewAmqp.Listening()
 
-	err = channel.Publish("events", "sample-key", false, false, mseesage)
-
-	if err != nil {
-		log.Fatal("Error Exchange Declare", err)
-	}
-
-	// event amqpRouter
-	amqpService = services.NewAmqpService(amqpCtx, channel)
-	amqpController = controllers.NewAmqpController(amqpService)
-	amqpController.RegisterAmqpRouter(httpServer)
-
-	// ------------- AMQP Test ----------------
+	httpServer.GET("/sendAmqp", NewAmqp.ServeHTTP)
 
 	// HTTPS 설정
 	tlsConfig, err := config.GetTlsConfig(envConfig)
