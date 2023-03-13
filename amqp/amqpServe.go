@@ -1,8 +1,10 @@
 package amqpserve
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"GO_MSA/config"
 
@@ -13,6 +15,14 @@ import (
 type EventAmqp struct {
 	amqp    *amqp.Connection
 	channel *amqp.Channel
+}
+
+type amqpEvent struct {
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	LocationId string    `json:"location"`
+	Start      time.Time `json:"start"`
+	End        time.Time `json:"end"`
 }
 
 func GetAmqpConnection(envConfig config.Config) (*EventAmqp, error) {
@@ -67,7 +77,35 @@ func (Ea *EventAmqp) Listening() {
 
 	go func() {
 		for msg := range msgs {
-			fmt.Println("message receiver : ", string(msg.Body))
+
+			rawEventName, ok := msg.Headers["x-event-name"]
+
+			if !ok {
+				msg.Nack(false, false)
+				// 만약 잘못되었다면 다른 구독자에게 전달도 안하지만 메시지는 표시하게
+				continue
+			}
+
+			eventName, ok := rawEventName.(string)
+
+			if !ok {
+				msg.Nack(false, false)
+				continue
+			}
+
+			if eventName == "event.created" {
+				// 후에 event를 새로 생성하는 요청도 들어갈 예정
+				continue
+			}
+
+			var event amqpEvent
+
+			err := json.Unmarshal(msg.Body, &event)
+			if err != nil {
+				log.Fatal("error unmarshalling : ", err)
+			}
+
+			fmt.Println(event)
 			msg.Ack(false)
 		}
 	}()
@@ -76,11 +114,28 @@ func (Ea *EventAmqp) Listening() {
 }
 
 func (Ea *EventAmqp) ServeHTTP(c *gin.Context) {
-	mseesage := amqp.Publishing{
-		Body: []byte("Heelo World"),
+	// 보통은 이제 메시지를 파라메터로 받아서 처리하지만, 나는 어떤방식으로 동작하는지가 궁금했기때문에
+	// value를 fix하여 테스트 진행
+
+	eventValue := &amqpEvent{
+		ID:         "1",
+		Name:       "hojin",
+		LocationId: "3",
+		Start:      time.Now(),
 	}
 
-	err := Ea.channel.Publish("events", "sample-key", false, false, mseesage)
+	jsonDoc, err := json.Marshal(eventValue)
+	if err != nil {
+		log.Fatal("jsonDoc error : ", err)
+	}
+
+	mseesage := amqp.Publishing{
+		Headers:     amqp.Table{"x-event-name": eventValue.Name},
+		Body:        jsonDoc,
+		ContentType: "application/json",
+	}
+
+	err = Ea.channel.Publish("events", "sample-key", false, false, mseesage)
 	if err != nil {
 		log.Fatal("Error Exchange Declare", err)
 	}
