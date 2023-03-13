@@ -13,8 +13,14 @@ import (
 )
 
 type EventAmqp struct {
-	amqp    *amqp.Connection
-	channel *amqp.Channel
+	amqp            *amqp.Connection
+	channel         map[string]*amqp.Channel
+	newChannelEvent chan *NewChannelEvent
+}
+
+type NewChannelEvent struct {
+	channelName      string
+	channelQueueName string
 }
 
 type amqpEvent struct {
@@ -32,34 +38,47 @@ func GetAmqpConnection(envConfig config.Config) (*EventAmqp, error) {
 		return nil, err
 	}
 
-	channel, err := connection.Channel()
-	if err != nil {
-		fmt.Println("1111", err)
-		return nil, err
-	}
-
 	// defer connection.Close()
 	// defer channel.Close()
 
-	return &EventAmqp{amqp: connection, channel: channel}, nil
+	newEventAmqp := &EventAmqp{amqp: connection, channel: make(map[string]*amqp.Channel), newChannelEvent: make(chan *NewChannelEvent)}
+
+	newEventAmqp.newChannelEvent <- &NewChannelEvent{
+		channelName:      "events",
+		channelQueueName: "my_queue",
+	}
+
+	return newEventAmqp, nil
 }
 
-func (Ea *EventAmqp) GetChannel() *amqp.Channel {
-	return Ea.channel
+func (Ea *EventAmqp) GetChannel(name string) *amqp.Channel {
+	return Ea.channel[name]
 }
 
-func (Ea *EventAmqp) SetAmquChannel(name, queue string) error {
-	err := Ea.channel.ExchangeDeclare(name, "topic", true, false, false, false, nil)
+func SetAmquChannel(Ea *EventAmqp, name, queue string) error {
+	channel, err := Ea.amqp.Channel()
 	if err != nil {
 		return err
 	}
 
-	_, err = Ea.channel.QueueDeclare(queue, true, false, false, false, nil)
+	Ea.channel[name] = channel
+
+	Ea.newChannelEvent <- &NewChannelEvent{
+		channelName:      name,
+		channelQueueName: queue,
+	}
+
+	err = Ea.channel[name].ExchangeDeclare(name, "topic", true, false, false, false, nil)
 	if err != nil {
 		return err
 	}
 
-	err = Ea.channel.QueueBind(queue, "#", "events", false, nil)
+	_, err = Ea.channel[name].QueueDeclare(queue, true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+
+	err = Ea.channel[name].QueueBind(queue, "#", "events", false, nil)
 	if err != nil {
 		return err
 	}
@@ -70,7 +89,22 @@ func (Ea *EventAmqp) SetAmquChannel(name, queue string) error {
 func (Ea *EventAmqp) Listening() {
 	forever := make(chan bool)
 
-	msgs, err := Ea.channel.Consume("my_queue", "", false, false, false, false, nil)
+	for {
+		select {
+		case newChannel := <-Ea.newChannelEvent:
+
+			newChannelName := newChannel.channelName
+			newChannelQueue := newChannel.channelQueueName
+
+			SetAmquChannel(Ea, newChannelName, newChannelQueue)
+		}
+	}
+
+	for i := 0; i < len(Ea.channelNameList); i++ {
+		channelName := Ea.channelNameList[i]
+	}
+
+	msgs, err := Ea.channel[channelName].Consume("my_queue", "", false, false, false, false, nil)
 	if err != nil {
 		log.Fatal("Wrong", err)
 	}
@@ -92,6 +126,8 @@ func (Ea *EventAmqp) Listening() {
 				msg.Nack(false, false)
 				continue
 			}
+
+			fmt.Println(eventName)
 
 			if eventName == "event.created" {
 				// 후에 event를 새로 생성하는 요청도 들어갈 예정

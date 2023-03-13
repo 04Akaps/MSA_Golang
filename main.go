@@ -63,12 +63,6 @@ func main() {
 		log.Fatal("Error get AMQP Connection", err)
 	}
 
-	err = NewAmqp.SetAmquChannel("events", "my_queue")
-
-	if err != nil {
-		log.Fatal("AMqp Settting Error", err)
-	}
-
 	go NewAmqp.Listening()
 
 	httpServer.GET("/sendAmqp", NewAmqp.ServeHTTP)
