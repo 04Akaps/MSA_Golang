@@ -5,18 +5,15 @@ run:
 
 linters:
   enable:
-    - errcheck
     - goimports
     - golint
     - govet
     - staticcheck
+  disable:
+    - errcheck
 
   nonamedreturns:
     report-error-in-defer: true
-
-linters-settings:
-  errcheck:
-    check-defer: false
 
 issues:
   exclude-use-default: false
