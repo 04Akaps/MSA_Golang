@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"GO_MSA/config"
+	"GO_MSA/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/streadway/amqp"
@@ -18,9 +20,9 @@ type EventAmqp struct {
 }
 
 type amqpEvent struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	LocationId string    `json:"location"`
+	ID         string    `json:"id" required:"binding"`
+	Name       string    `json:"name" required:"binding"`
+	LocationId string    `json:"location" required:"binding"`
 	Start      time.Time `json:"start"`
 	End        time.Time `json:"end"`
 }
@@ -59,7 +61,7 @@ func (Ea *EventAmqp) SetAmquChannel(name, queue string) error {
 		return err
 	}
 
-	err = Ea.channel.QueueBind(queue, "#", "events", false, nil)
+	err = Ea.channel.QueueBind(queue, "#", name, false, nil)
 	if err != nil {
 		return err
 	}
@@ -124,14 +126,31 @@ func (Ea *EventAmqp) Listening() {
 	<-forever
 }
 
-func (Ea *EventAmqp) ServeHTTP(c *gin.Context) {
+// type amqpEvent struct {
+// 	ID         string    `json:"id"`
+// 	Name       string    `json:"name"`
+// 	LocationId string    `json:"location"`
+// 	Start      time.Time `json:"start"`
+// 	End        time.Time `json:"end"`
+// }
+
+func (Ea *EventAmqp) ServeHTTP(ctx *gin.Context) {
 	// 보통은 이제 메시지를 파라메터로 받아서 처리하지만, 나는 어떤방식으로 동작하는지가 궁금했기때문에
 	// value를 fix하여 테스트 진행
 
+	var req amqpEvent
+
+	bodyCheckError := middleware.CheckBodyBinding(&req, ctx)
+
+	if bodyCheckError != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"errors": bodyCheckError, "status": -1})
+		return
+	}
+
 	eventValue := &amqpEvent{
-		ID:         "1",
-		Name:       "hojin",
-		LocationId: "3",
+		ID:         req.ID,
+		Name:       req.Name,
+		LocationId: req.LocationId,
 		Start:      time.Now(),
 	}
 
@@ -150,4 +169,6 @@ func (Ea *EventAmqp) ServeHTTP(c *gin.Context) {
 	if err != nil {
 		log.Fatal("Error Exchange Declare", err)
 	}
+
+	ctx.JSON(http.StatusOK, "success")
 }
