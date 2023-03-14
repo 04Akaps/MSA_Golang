@@ -17,10 +17,35 @@ enum PhoneNumberType {
     WORK = 2;
 }
 
-message AddressBook {
-    repeated Person people = 1;
-    string owner=2;
+message CreatePersonRequest {
+    Person person = 1;
 }
+message CreatePersonResponse {
+    Person person = 1;
+}
+
+message ReadPersonRequest {
+    string person_number = 1;
+}
+
+message ReadPersonResponse {
+    Person person = 1;
+}
+
+message ListPersonRequest {
+
+}
+
+message ListPersonResponse {
+    Person person = 1;
+}
+
+service PersonService {
+    rpc CreatePerson(CreatePersonRequest) returns (CreatePersonResponse); // 새로운 Person생성
+    rpc ReadPerson(ReadPersonRequest) returns(ReadPersonResponse); // 기존에 있는 Person Read
+    rpc ListPerson(ListPersonRequest) returns(ListPersonResponse); // 전체 Person가져오기
+}
+
 
 /**
 
@@ -33,6 +58,13 @@ message내부의 field타입은 다양하게 있습니다.
 1. singular -> 가장 일반적인 타입입니다. 0,이나 다른 값들을 마음대로 가질 수 있지만 한개 이상은 가질 수 없습니다.
 2. repeated -> 하나의 필드에 여러 개의 값을 가질 수 있는 타입이니다. 즉 위에 있는 예시로 들자면, phone_number는 여러 객체의 PhoneNumber를 담을 수 있다.
 3. map -> 용어와 같이 키-벨류 형태로 데이터를 표현합니다. Ex : map<string int32> test = 4;
+4. reserved -> 예약된 필드라는 의미 입니다. 선언이 된다면 해당 필드에 사용된 value값들을 다른 필드에서 활요이 불가능 합니다.
+-> 해당 조건은 같은 message에서만 유효합니다.
+
+이후 함수는 다음과 같이 service에 작성을 하게 됩니다.
+
+이떄 사용하는 함수들의 이름을 rpc로 지정을 하고, 인자들에 대해서 각각의 message를 만들어 줍니다.
+- 이러한 작성법은 어렵지 않기 떄문에 부가적인 설명은 하지 않겠습니다.
 
 
 
