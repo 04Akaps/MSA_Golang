@@ -33,6 +33,8 @@ var ctxMongo context.Context
 var envConfig config.Config
 
 func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	envConfig = config.LoadConfig(".")
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.DebugMode)

@@ -48,7 +48,7 @@ message ListPersonResponse {
 service PersonService {
     rpc CreatePerson(CreatePersonRequest) returns (CreatePersonResponse); // 새로운 Person생성
     rpc ReadPerson(ReadPersonRequest) returns(ReadPersonResponse); // 기존에 있는 Person Read
-    rpc ListPerson(ListPersonRequest) returns(ListPersonResponse); // 전체 Person가져오기
+    rpc ListPerson(ListPersonRequest) returns( stream ListPersonResponse); // 전체 Person가져오기
 }
 
 
