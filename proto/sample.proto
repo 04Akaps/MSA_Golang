@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+message Person {
+    string name = 1;
+    int32 age = 2;
+    repeated PhoneNumber phone_numbers = 3;
+}
+
+message PhoneNumber {
+    string number = 1;
+    PhoneNumberType type = 2;
+}
+
+enum PhoneNumberType {
+    MOBILE =0;
+    HOME = 1;
+    WORK = 2;
+}
+
+message AddressBook {
+    repeated Person people = 1;
+    string owner=2;
+}
+
+/**
+
+proto에서는 message가 하나의 struct처럼 동작을 합니다.
+해당 field내부에는 다음과 같은 예시로 값들이 들어가게 되고, value는 고유 합니다.
+-> 즉 중복이 일어나서는 안됩니다.
+
+message내부의 field타입은 다양하게 있습니다.
+
+1. singular -> 가장 일반적인 타입입니다. 0,이나 다른 값들을 마음대로 가질 수 있지만 한개 이상은 가질 수 없습니다.
+2. repeated -> 하나의 필드에 여러 개의 값을 가질 수 있는 타입이니다. 즉 위에 있는 예시로 들자면, phone_number는 여러 객체의 PhoneNumber를 담을 수 있다.
+3. map -> 용어와 같이 키-벨류 형태로 데이터를 표현합니다. Ex : map<string int32> test = 4;
+
+
+
+**/
+
