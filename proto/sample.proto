@@ -1,9 +1,14 @@
 syntax = "proto3";
 
+option go_package = "/personpb";
+
+import "google/protobuf/timestamp.proto";
+
 message Person {
     string name = 1;
     int32 age = 2;
     repeated PhoneNumber phone_numbers = 3;
+    google.protobuf.Timestamp last_updated = 4;
 }
 
 message PhoneNumber {
@@ -67,6 +72,19 @@ message내부의 field타입은 다양하게 있습니다.
 - 이러한 작성법은 어렵지 않기 떄문에 부가적인 설명은 하지 않겠습니다.
 
 
+option은 go에서 생성된 코드가 속하는 것을 지정 합니다. 즉 이렇게 만들어진 proto3코드는 personpb라는 패키지를 통해서 접근 가능합니다.
+
+
+추가로 별도 의존성을 위해서 다음 명령어를 실행합니다.
+- go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+
+
+cli를 통해서 작성한 proto코드를 go파일로 만드는 명령어는 다음과 같습니다.
+- protoc --go_out=. --go-grpc_out=. proto/sample.proto
+
+둘다 현재 경로에 대해서 out하게 되고, option에서 준 네이밍에 따라서 하나의 go파일이 만들어 지게 됩니다.
+
 
 **/
+
 
