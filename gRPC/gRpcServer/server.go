@@ -12,7 +12,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var collection *mongo.Collection
@@ -25,6 +28,52 @@ func ErrHandling(funcName string, err error) {
 	if err != nil {
 		log.Fatal(funcName, " : Error is ocured : ", err)
 	}
+}
+
+type Person struct {
+	Name         string                  `bson:"name"`
+	Age          int32                   `bson:"age"`
+	PhoneNumbers []*personpb.PhoneNumber `bson:"phone_numbers"`
+	LastUpdated  *timestamppb.Timestamp  `bson:"last_updated"`
+}
+
+func (*server) CreatePerson(ctx context.Context, req *personpb.CreatePersonRequest) (*personpb.CreatePersonResponse, error) {
+	fmt.Println("Create New Person")
+
+	person := req.GetPerson()
+
+	data := Person{
+		Name:         person.Name,
+		Age:          person.Age,
+		PhoneNumbers: person.PhoneNumbers,
+		LastUpdated:  person.LastUpdated,
+	}
+
+	_, err := collection.InsertOne(ctx, data)
+	if err != nil {
+		return nil, status.Errorf(
+			codes.Internal,
+			fmt.Sprintf("Internal error: %v", err),
+		)
+	}
+
+	// oid, ok := res.InsertedID.(primitive.ObjectID)
+
+	// if !ok {
+	// 	return nil, status.Errorf(
+	// 		codes.Internal,
+	// 		fmt.Sprintf("Cannot convert to OID"),
+	// 	)
+	// }
+
+	return &personpb.CreatePersonResponse{
+		Person: &personpb.Person{
+			Name:         person.Name,
+			Age:          person.Age,
+			PhoneNumbers: person.PhoneNumbers,
+			LastUpdated:  person.LastUpdated,
+		},
+	}, nil
 }
 
 // gRPC 서버 까지 root main.go에 작성하고 싶지는 않아서 따로 분리,
