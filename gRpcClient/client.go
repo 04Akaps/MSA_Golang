@@ -32,14 +32,19 @@ func main() {
 
 	fmt.Println(" ---------- Creating the New Person  ---------- ")
 
-	newPhoneNumber := &personpb.PhoneNumber{
+	phoneNumberList := []*personpb.PhoneNumber{{
 		Number: "010-1234-5038",
-	}
+		Type:   personpb.PhoneNumberType_HOME,
+	}, {
+		Number: "010-0000-1234",
+		Type:   personpb.PhoneNumberType_MOBILE,
+	}}
+
 	newPerson := &personpb.Person{
-		Name: "my gRPC Test Name",
-		Age:  27,
+		Name:         "my gRPC Test Name",
+		Age:          27,
+		PhoneNumbers: phoneNumberList,
 	}
-	newPerson.PhoneNumbers = append(newPerson.PhoneNumbers, newPhoneNumber)
 
 	createPersonResponse, err := c.CreatePerson(context.Background(), &personpb.CreatePersonRequest{Person: newPerson})
 	ErrHandling("CreatePerson", err)
