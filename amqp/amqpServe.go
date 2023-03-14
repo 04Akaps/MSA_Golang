@@ -70,15 +70,14 @@ func (Ea *EventAmqp) SetAmquChannel(name, queue string) error {
 }
 
 func (Ea *EventAmqp) Listening() {
-	forever := make(chan bool)
-
 	msgs, err := Ea.channel.Consume("my_queue", "", false, false, false, false, nil)
 	if err != nil {
 		log.Fatal("Wrong", err)
 	}
 
-	go func() {
-		for msg := range msgs {
+	for {
+		select {
+		case msg := <-msgs:
 
 			rawEventName, ok := msg.Headers["x-event-name"]
 
@@ -114,25 +113,14 @@ func (Ea *EventAmqp) Listening() {
 			}
 
 			fmt.Println(event)
-			msg.Ack(false)
 
 			err = msg.Ack(false)
 			if err != nil {
-				log.Fatal("Nack error : ", err)
+				log.Fatal("Ack error : ", err)
 			}
 		}
-	}()
-
-	<-forever
+	}
 }
-
-// type amqpEvent struct {
-// 	ID         string    `json:"id"`
-// 	Name       string    `json:"name"`
-// 	LocationId string    `json:"location"`
-// 	Start      time.Time `json:"start"`
-// 	End        time.Time `json:"end"`
-// }
 
 func (Ea *EventAmqp) ServeHTTP(ctx *gin.Context) {
 	// 보통은 이제 메시지를 파라메터로 받아서 처리하지만, 나는 어떤방식으로 동작하는지가 궁금했기때문에
@@ -166,6 +154,7 @@ func (Ea *EventAmqp) ServeHTTP(ctx *gin.Context) {
 	}
 
 	err = Ea.channel.Publish("events", "sample-key", false, false, mseesage)
+
 	if err != nil {
 		log.Fatal("Error Exchange Declare", err)
 	}
