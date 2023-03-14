@@ -17,7 +17,8 @@ func ErrHandling(funcName string, err error) {
 }
 
 func main() {
-	fmt.Println("Person gRPC Client")
+	// 원래는 서버 파서 작업을 해야겠지만... 간단하게 그냥 작업 Client작업만 진행 중
+	fmt.Println(" ---------- Person gRPC Client ---------- ")
 
 	opts := grpc.WithInsecure()
 
@@ -41,8 +42,17 @@ func main() {
 	newPerson.PhoneNumbers = append(newPerson.PhoneNumbers, newPhoneNumber)
 
 	createPersonResponse, err := c.CreatePerson(context.Background(), &personpb.CreatePersonRequest{Person: newPerson})
-
 	ErrHandling("CreatePerson", err)
 
-	fmt.Printf("Person is Created!! : &v", createPersonResponse)
+	fmt.Printf("Person is Created!! : %v", createPersonResponse)
+	newPersonName := createPersonResponse.GetPerson().GetName()
+
+	fmt.Println(" ---------- Check New Person ---------- ")
+
+	readedPerson, err := c.ReadPerson(context.Background(), &personpb.ReadPersonRequest{PersonName: newPersonName})
+	ErrHandling("ReadPerson", err)
+
+	fmt.Printf("Readed Person is : %v", readedPerson)
+
+	// 후에 update, delete까지 추가 예정
 }

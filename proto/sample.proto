@@ -30,7 +30,7 @@ message CreatePersonResponse {
 }
 
 message ReadPersonRequest {
-    string person_number = 1;
+    string person_name = 1;
 }
 
 message ReadPersonResponse {
