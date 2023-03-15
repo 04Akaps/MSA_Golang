@@ -74,7 +74,11 @@ pipeline {
         stage ("Pull & Run on EC2") {
             steps {
                 sshagent(credentials :["deploy-key"]) {
-                    sh 'echo hojin'
+                    sh "ssh -o StrictHostKeyChecking=no ubuntu@${deployHost} \
+                        '/usr/local/bin/aws ecr get-login-password --region ${region} | ${docker} login --username AWS --password-stdin ${ecrUrl}'
+                    "
+
+                    sh "docker run -d -p 80:80 -t ${ecrUrl}/${dockerImgName}:latest"
                 }
             }
         }
