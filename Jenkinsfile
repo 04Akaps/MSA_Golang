@@ -52,7 +52,6 @@ pipeline {
 
         stage("Push To AWS ECR") {
             steps {
-                script {
                     // 어차피 aws configure를 해두었다.
                     // cleanup current user docker credentials
                     sh 'rm -f ~/.dockercfg ~/.docker/config.json || true'
@@ -60,7 +59,6 @@ pipeline {
                     // 기존에 이미 agent에서 login해 두었지만 혹시 모르니 테스트 용도로 재 로그인 시도
 
                     sh "${docker} push ${ecrUrl}/${dockerImgName}:latest"
-                }
             }
 
             post {
@@ -69,6 +67,14 @@ pipeline {
                 }
                 failure {
                     error 'fail push docker image to ECR' // exit pipeline
+                }
+            }
+        }
+
+        stage ("Pull & Run on EC2") {
+            steps {
+                sshagent(credentials :["deploy-key"]) {
+                    sh 'echo hojin'
                 }
             }
         }
